@@ -6,7 +6,7 @@ The model is developed in Visual Studio using the Tabular project type (`.smproj
 
 ## 📌 Overview
 
-SSAS Tabular is an in-memory analytical engine that enables fast querying of relational data using columnar storage and DAX (Data Analysis Expressions). Tabular models are commonly used for business intelligence and reporting scenarios in enterprise environments. :contentReference[oaicite:0]{index=0}
+SSAS Tabular is an in-memory analytical engine that enables fast querying of relational data using columnar storage and DAX (Data Analysis Expressions). Tabular models are commonly used for business intelligence and reporting scenarios in enterprise environments.
 
 This project demonstrates:
 - Basic tabular model structure with tables, relationships, and measures
