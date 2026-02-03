@@ -1,0 +1,892 @@
+{
+  "name": "SemanticModel",
+  "compatibilityLevel": 1600,
+  "model": {
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG",
+        "connectionDetails": {
+          "protocol": "tds",
+          "address": {
+            "server": "Amirhosein-LPC\\SSAS_PLAYGROUND",
+            "database": "TSQL2012_PG"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "ServiceAccount",
+          "kind": "SQL",
+          "path": "amirhosein-lpc\\ssas_playground;TSQL2012_PG",
+          "EncryptConnection": false
+        }
+      },
+      {
+        "type": "structured",
+        "name": "File/E:\\work\\Training\\faradars\\SSAS_Tabular_Cube [Files_And_Codes]\\S01-S24\\Data",
+        "connectionDetails": {
+          "protocol": "file",
+          "address": {
+            "path": "E:\\work\\Training\\faradars\\SSAS_Tabular_Cube [Files_And_Codes]\\S01-S24\\Data.xlsx"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "ServiceAccount",
+          "kind": "File",
+          "path": "e:\\work\\training\\faradars\\ssas_tabular_cube [files_and_codes]\\s01-s24\\data.xlsx"
+        },
+        "contextExpression": [
+          "let",
+          "    #\"0001\" = Excel.Workbook(..., null, true)",
+          "in",
+          "    #\"0001\""
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "name": "Sales Orders",
+        "columns": [
+          {
+            "name": "orderid",
+            "dataType": "int64",
+            "sourceColumn": "orderid"
+          },
+          {
+            "name": "custid",
+            "dataType": "int64",
+            "sourceColumn": "custid"
+          },
+          {
+            "name": "empid",
+            "dataType": "int64",
+            "sourceColumn": "empid"
+          },
+          {
+            "name": "orderdate",
+            "dataType": "dateTime",
+            "sourceColumn": "orderdate"
+          },
+          {
+            "name": "requireddate",
+            "dataType": "dateTime",
+            "sourceColumn": "requireddate"
+          },
+          {
+            "name": "shippeddate",
+            "dataType": "dateTime",
+            "sourceColumn": "shippeddate"
+          },
+          {
+            "name": "shipperid",
+            "dataType": "int64",
+            "sourceColumn": "shipperid"
+          },
+          {
+            "name": "freight",
+            "dataType": "decimal",
+            "sourceColumn": "freight"
+          },
+          {
+            "name": "shipname",
+            "dataType": "string",
+            "sourceColumn": "shipname"
+          },
+          {
+            "name": "shipaddress",
+            "dataType": "string",
+            "sourceColumn": "shipaddress"
+          },
+          {
+            "name": "shipcity",
+            "dataType": "string",
+            "sourceColumn": "shipcity"
+          },
+          {
+            "name": "shipregion",
+            "dataType": "string",
+            "sourceColumn": "shipregion"
+          },
+          {
+            "name": "shippostalcode",
+            "dataType": "string",
+            "sourceColumn": "shippostalcode"
+          },
+          {
+            "name": "shipcountry",
+            "dataType": "string",
+            "sourceColumn": "shipcountry"
+          },
+          {
+            "type": "calculated",
+            "name": "Customer_City",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": "RELATED('Sales Customers'[city])"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG\",",
+                "    Sales_Orders = Source{[Schema=\"Sales\",Item=\"Orders\"]}[Data]",
+                "in",
+                "    Sales_Orders"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Measure 1",
+            "expression": "COUNTROWS('Sales OrderDetails')"
+          }
+        ]
+      },
+      {
+        "name": "Sales OrderDetails",
+        "columns": [
+          {
+            "name": "orderid",
+            "dataType": "int64",
+            "sourceColumn": "orderid"
+          },
+          {
+            "name": "productid",
+            "dataType": "int64",
+            "sourceColumn": "productid"
+          },
+          {
+            "name": "unitprice",
+            "dataType": "decimal",
+            "sourceColumn": "unitprice"
+          },
+          {
+            "name": "qty",
+            "dataType": "int64",
+            "sourceColumn": "qty"
+          },
+          {
+            "name": "discount",
+            "dataType": "double",
+            "sourceColumn": "discount"
+          },
+          {
+            "type": "calculated",
+            "name": "AMOUNT",
+            "dataType": "decimal",
+            "isDataTypeInferred": true,
+            "expression": "'Sales OrderDetails'[qty]*'Sales OrderDetails'[unitprice]",
+            "formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+            "annotations": [
+              {
+                "name": "Format",
+                "value": "<Format Format=\"Currency\" Accuracy=\"2\" ThousandSeparator=\"True\"><Currency LCID=\"1033\" DisplayName=\"$ English (United States)\" Symbol=\"$\" PositivePattern=\"0\" NegativePattern=\"0\" /></Format>"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition_1",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG\",",
+                "    Sales_OrderDetails = Source{[Schema=\"Sales\",Item=\"OrderDetails\"]}[Data],",
+                "    #\"Filtered Rows\" = Table.SelectRows(Sales_OrderDetails, each [orderid] < 11000)",
+                "in",
+                "    #\"Filtered Rows\""
+              ]
+            },
+            "annotations": [
+              {
+                "name": "QueryEditorSerialization",
+                "value": [
+                  "<?xml version=\"1.0\" encoding=\"UTF-16\"?><Gemini xmlns=\"QueryEditorSerialization\"><AnnotationContent><![CDATA[<RSQueryCommandText>let",
+                  "    Source = #\"SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG\",",
+                  "    Sales_OrderDetails = Source{[Schema=\"Sales\",Item=\"OrderDetails\"]}[Data]",
+                  "in",
+                  "    Sales_OrderDetails</RSQueryCommandText><RSQueryCommandType>Text</RSQueryCommandType><RSQueryDesignState></RSQueryDesignState>]]></AnnotationContent></Gemini>"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Partition_2",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG\",",
+                "    Sales_OrderDetails = Source{[Schema=\"Sales\",Item=\"OrderDetails\"]}[Data],",
+                "    #\"Filtered Rows\" = Table.SelectRows(Sales_OrderDetails, each [orderid] >= 11000)",
+                "in",
+                "    #\"Filtered Rows\""
+              ]
+            },
+            "annotations": [
+              {
+                "name": "QueryEditorSerialization",
+                "value": [
+                  "<?xml version=\"1.0\" encoding=\"UTF-16\"?><Gemini xmlns=\"QueryEditorSerialization\"><AnnotationContent><![CDATA[<RSQueryCommandText>let",
+                  "    Source = #\"SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG\",",
+                  "    Sales_OrderDetails = Source{[Schema=\"Sales\",Item=\"OrderDetails\"]}[Data]",
+                  "in",
+                  "    Sales_OrderDetails</RSQueryCommandText><RSQueryCommandType>Text</RSQueryCommandType><RSQueryDesignState></RSQueryDesignState>]]></AnnotationContent></Gemini>"
+                ]
+              }
+            ]
+          }
+        ],
+        "measures": [
+          {
+            "name": "sumQ",
+            "expression": "SUM('Sales OrderDetails'[qty])"
+          },
+          {
+            "name": "M_Amount",
+            "expression": "SUMX('Sales OrderDetails','Sales OrderDetails'[qty]*'Sales OrderDetails'[unitprice])"
+          }
+        ]
+      },
+      {
+        "name": "Sales Customers",
+        "columns": [
+          {
+            "name": "custid",
+            "dataType": "int64",
+            "sourceColumn": "custid"
+          },
+          {
+            "name": "companyname",
+            "dataType": "string",
+            "sourceColumn": "companyname"
+          },
+          {
+            "name": "contactname",
+            "dataType": "string",
+            "sourceColumn": "contactname"
+          },
+          {
+            "name": "contacttitle",
+            "dataType": "string",
+            "sourceColumn": "contacttitle"
+          },
+          {
+            "name": "address",
+            "dataType": "string",
+            "sourceColumn": "address"
+          },
+          {
+            "name": "city",
+            "dataType": "string",
+            "sourceColumn": "city"
+          },
+          {
+            "name": "region",
+            "dataType": "string",
+            "sourceColumn": "region"
+          },
+          {
+            "name": "postalcode",
+            "dataType": "string",
+            "sourceColumn": "postalcode"
+          },
+          {
+            "name": "country",
+            "dataType": "string",
+            "sourceColumn": "country"
+          },
+          {
+            "name": "phone",
+            "dataType": "string",
+            "sourceColumn": "phone"
+          },
+          {
+            "name": "fax",
+            "dataType": "string",
+            "sourceColumn": "fax"
+          },
+          {
+            "type": "calculated",
+            "name": "Purcahse_Count",
+            "dataType": "int64",
+            "isDataTypeInferred": true,
+            "expression": "COUNTROWS(RELATEDTABLE('Sales Orders'))"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"SQL/Amirhosein-LPC\\SSAS_PLAYGROUND;TSQL2012_PG\",",
+                "    Sales_Customers = Source{[Schema=\"Sales\",Item=\"Customers\"]}[Data]",
+                "in",
+                "    Sales_Customers"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "DimDate_Order",
+        "columns": [
+          {
+            "name": "DateKey",
+            "dataType": "int64",
+            "sourceColumn": "DateKey"
+          },
+          {
+            "name": "GregorianDate",
+            "dataType": "dateTime",
+            "sourceColumn": "GregorianDate"
+          },
+          {
+            "name": "YearGregorian",
+            "dataType": "int64",
+            "sourceColumn": "YearGregorian"
+          },
+          {
+            "name": "YearMonthG",
+            "dataType": "int64",
+            "sourceColumn": "YearMonthG"
+          },
+          {
+            "name": "MonthGregorian",
+            "dataType": "int64",
+            "sourceColumn": "MonthGregorian"
+          },
+          {
+            "name": "DayofMonthG",
+            "dataType": "int64",
+            "sourceColumn": "DayofMonthG"
+          },
+          {
+            "name": "MonthNameG",
+            "dataType": "string",
+            "sourceColumn": "MonthNameG"
+          },
+          {
+            "name": "QuarterNumberG",
+            "dataType": "int64",
+            "sourceColumn": "QuarterNumberG"
+          },
+          {
+            "name": "DayofWeekG",
+            "dataType": "int64",
+            "sourceColumn": "DayofWeekG"
+          },
+          {
+            "name": "DayofYearG",
+            "dataType": "int64",
+            "sourceColumn": "DayofYearG"
+          },
+          {
+            "name": "WeekofYearG",
+            "dataType": "int64",
+            "sourceColumn": "WeekofYearG"
+          },
+          {
+            "name": "WeekDayName",
+            "dataType": "string",
+            "sourceColumn": "WeekDayName"
+          },
+          {
+            "name": "DateNumberP",
+            "dataType": "int64",
+            "sourceColumn": "DateNumberP"
+          },
+          {
+            "name": "DateP",
+            "dataType": "string",
+            "sourceColumn": "DateP"
+          },
+          {
+            "name": "YearMonthP",
+            "dataType": "int64",
+            "sourceColumn": "YearMonthP"
+          },
+          {
+            "name": "MonthP",
+            "dataType": "int64",
+            "sourceColumn": "MonthP"
+          },
+          {
+            "name": "DayP",
+            "dataType": "int64",
+            "sourceColumn": "DayP"
+          },
+          {
+            "name": "QuarterNumberP",
+            "dataType": "int64",
+            "sourceColumn": "QuarterNumberP"
+          },
+          {
+            "name": "YearP",
+            "dataType": "int64",
+            "sourceColumn": "YearP"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"File/E:\\work\\Training\\faradars\\SSAS_Tabular_Cube [Files_And_Codes]\\S01-S24\\Data\",",
+                "    DimDate_Sheet = Source{[Item=\"DimDate\",Kind=\"Sheet\"]}[Data],",
+                "    #\"Promoted Headers\" = Table.PromoteHeaders(DimDate_Sheet, [PromoteAllScalars=true]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Promoted Headers\",{{\"DateKey\", Int64.Type}, {\"GregorianDate\", type date}, {\"YearGregorian\", Int64.Type}, {\"YearMonthG\", Int64.Type}, {\"MonthGregorian\", Int64.Type}, {\"DayofMonthG\", Int64.Type}, {\"MonthNameG\", type text}, {\"QuarterNumberG\", Int64.Type}, {\"DayofWeekG\", Int64.Type}, {\"DayofYearG\", Int64.Type}, {\"WeekofYearG\", Int64.Type}, {\"WeekDayName\", type text}, {\"DateNumberP\", Int64.Type}, {\"DateP\", type text}, {\"YearMonthP\", Int64.Type}, {\"MonthP\", Int64.Type}, {\"DayP\", Int64.Type}, {\"QuarterNumberP\", Int64.Type}, {\"YearP\", Int64.Type}})",
+                "in",
+                "    #\"Changed Type\""
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "PersianDateHierarchy",
+            "levels": [
+              {
+                "name": "YearP",
+                "ordinal": 0,
+                "column": "YearP"
+              },
+              {
+                "name": "DayP",
+                "ordinal": 2,
+                "column": "DayP"
+              },
+              {
+                "name": "YearMonthP",
+                "ordinal": 1,
+                "column": "YearMonthP"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "DimDate_Required",
+        "columns": [
+          {
+            "name": "DateKey",
+            "dataType": "int64",
+            "sourceColumn": "DateKey"
+          },
+          {
+            "name": "GregorianDate",
+            "dataType": "dateTime",
+            "sourceColumn": "GregorianDate"
+          },
+          {
+            "name": "YearGregorian",
+            "dataType": "int64",
+            "sourceColumn": "YearGregorian"
+          },
+          {
+            "name": "YearMonthG",
+            "dataType": "int64",
+            "sourceColumn": "YearMonthG"
+          },
+          {
+            "name": "MonthGregorian",
+            "dataType": "int64",
+            "sourceColumn": "MonthGregorian"
+          },
+          {
+            "name": "DayofMonthG",
+            "dataType": "int64",
+            "sourceColumn": "DayofMonthG"
+          },
+          {
+            "name": "MonthNameG",
+            "dataType": "string",
+            "sourceColumn": "MonthNameG"
+          },
+          {
+            "name": "QuarterNumberG",
+            "dataType": "int64",
+            "sourceColumn": "QuarterNumberG"
+          },
+          {
+            "name": "DayofWeekG",
+            "dataType": "int64",
+            "sourceColumn": "DayofWeekG"
+          },
+          {
+            "name": "DayofYearG",
+            "dataType": "int64",
+            "sourceColumn": "DayofYearG"
+          },
+          {
+            "name": "WeekofYearG",
+            "dataType": "int64",
+            "sourceColumn": "WeekofYearG"
+          },
+          {
+            "name": "WeekDayName",
+            "dataType": "string",
+            "sourceColumn": "WeekDayName"
+          },
+          {
+            "name": "DateNumberP",
+            "dataType": "int64",
+            "sourceColumn": "DateNumberP"
+          },
+          {
+            "name": "DateP",
+            "dataType": "string",
+            "sourceColumn": "DateP"
+          },
+          {
+            "name": "YearMonthP",
+            "dataType": "int64",
+            "sourceColumn": "YearMonthP"
+          },
+          {
+            "name": "MonthP",
+            "dataType": "int64",
+            "sourceColumn": "MonthP"
+          },
+          {
+            "name": "DayP",
+            "dataType": "int64",
+            "sourceColumn": "DayP"
+          },
+          {
+            "name": "QuarterNumberP",
+            "dataType": "int64",
+            "sourceColumn": "QuarterNumberP"
+          },
+          {
+            "name": "YearP",
+            "dataType": "int64",
+            "sourceColumn": "YearP"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"File/E:\\work\\Training\\faradars\\SSAS_Tabular_Cube [Files_And_Codes]\\S01-S24\\Data\",",
+                "    DimDate_Sheet = Source{[Item=\"DimDate\",Kind=\"Sheet\"]}[Data],",
+                "    #\"Promoted Headers\" = Table.PromoteHeaders(DimDate_Sheet, [PromoteAllScalars=true]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Promoted Headers\",{{\"DateKey\", Int64.Type}, {\"GregorianDate\", type date}, {\"YearGregorian\", Int64.Type}, {\"YearMonthG\", Int64.Type}, {\"MonthGregorian\", Int64.Type}, {\"DayofMonthG\", Int64.Type}, {\"MonthNameG\", type text}, {\"QuarterNumberG\", Int64.Type}, {\"DayofWeekG\", Int64.Type}, {\"DayofYearG\", Int64.Type}, {\"WeekofYearG\", Int64.Type}, {\"WeekDayName\", type text}, {\"DateNumberP\", Int64.Type}, {\"DateP\", type text}, {\"YearMonthP\", Int64.Type}, {\"MonthP\", Int64.Type}, {\"DayP\", Int64.Type}, {\"QuarterNumberP\", Int64.Type}, {\"YearP\", Int64.Type}})",
+                "in",
+                "    #\"Changed Type\""
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "CITY_QTY",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Total",
+            "dataType": "int64",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Total]"
+          },
+          {
+            "type": "calculatedTableColumn",
+            "name": "city",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "Sales Customers[city]"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculatedTable 1",
+            "source": {
+              "type": "calculated",
+              "expression": "SUMMARIZECOLUMNS('Sales Customers'[city],\"Total\",[sumQ])"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "1e25d071-93da-4608-b91c-2a29277db656",
+        "fromTable": "Sales Orders",
+        "fromColumn": "custid",
+        "toTable": "Sales Customers",
+        "toColumn": "custid"
+      },
+      {
+        "name": "819afdea-863c-40c6-b94c-bb269dcf2422",
+        "fromTable": "Sales OrderDetails",
+        "fromColumn": "orderid",
+        "toTable": "Sales Orders",
+        "toColumn": "orderid"
+      },
+      {
+        "name": "50d4ee35-e0be-4b49-bb04-e81b150a1cbd",
+        "fromTable": "Sales Orders",
+        "fromColumn": "orderdate",
+        "toTable": "DimDate_Order",
+        "toColumn": "GregorianDate"
+      },
+      {
+        "name": "abc60fdc-a816-4ab6-83c4-7278285d9208",
+        "fromTable": "Sales Orders",
+        "fromColumn": "requireddate",
+        "toTable": "DimDate_Required",
+        "toColumn": "GregorianDate"
+      }
+    ],
+    "perspectives": [
+      {
+        "name": "prspctv_1",
+        "tables": [
+          {
+            "name": "DimDate_Order",
+            "columns": [
+              {
+                "name": "DateKey"
+              },
+              {
+                "name": "DateNumberP"
+              },
+              {
+                "name": "DateP"
+              },
+              {
+                "name": "DayofMonthG"
+              },
+              {
+                "name": "DayofWeekG"
+              },
+              {
+                "name": "DayofYearG"
+              },
+              {
+                "name": "DayP"
+              },
+              {
+                "name": "GregorianDate"
+              },
+              {
+                "name": "MonthGregorian"
+              },
+              {
+                "name": "MonthNameG"
+              },
+              {
+                "name": "MonthP"
+              },
+              {
+                "name": "QuarterNumberG"
+              },
+              {
+                "name": "QuarterNumberP"
+              },
+              {
+                "name": "WeekDayName"
+              },
+              {
+                "name": "WeekofYearG"
+              },
+              {
+                "name": "YearGregorian"
+              },
+              {
+                "name": "YearMonthG"
+              },
+              {
+                "name": "YearMonthP"
+              },
+              {
+                "name": "YearP"
+              }
+            ],
+            "hierarchies": [
+              {
+                "name": "PersianDateHierarchy"
+              }
+            ]
+          },
+          {
+            "name": "Sales Customers",
+            "columns": [
+              {
+                "name": "address"
+              },
+              {
+                "name": "city"
+              },
+              {
+                "name": "companyname"
+              },
+              {
+                "name": "contactname"
+              },
+              {
+                "name": "contacttitle"
+              },
+              {
+                "name": "country"
+              },
+              {
+                "name": "custid"
+              },
+              {
+                "name": "fax"
+              },
+              {
+                "name": "phone"
+              },
+              {
+                "name": "postalcode"
+              },
+              {
+                "name": "Purcahse_Count"
+              },
+              {
+                "name": "region"
+              }
+            ]
+          },
+          {
+            "name": "Sales OrderDetails",
+            "columns": [
+              {
+                "name": "AMOUNT"
+              },
+              {
+                "name": "discount"
+              },
+              {
+                "name": "orderid"
+              },
+              {
+                "name": "productid"
+              },
+              {
+                "name": "qty"
+              },
+              {
+                "name": "unitprice"
+              }
+            ],
+            "measures": [
+              {
+                "name": "M_Amount"
+              },
+              {
+                "name": "sumQ"
+              }
+            ]
+          },
+          {
+            "name": "Sales Orders",
+            "columns": [
+              {
+                "name": "custid"
+              },
+              {
+                "name": "Customer_City"
+              },
+              {
+                "name": "empid"
+              },
+              {
+                "name": "freight"
+              },
+              {
+                "name": "orderdate"
+              },
+              {
+                "name": "orderid"
+              },
+              {
+                "name": "requireddate"
+              },
+              {
+                "name": "shipaddress"
+              },
+              {
+                "name": "shipcity"
+              },
+              {
+                "name": "shipcountry"
+              },
+              {
+                "name": "shipname"
+              },
+              {
+                "name": "shippeddate"
+              },
+              {
+                "name": "shipperid"
+              },
+              {
+                "name": "shippostalcode"
+              },
+              {
+                "name": "shipregion"
+              }
+            ],
+            "measures": [
+              {
+                "name": "Measure 1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "roles": [
+      {
+        "name": "custid_1",
+        "description": "just sees details for CUSTOMERID=1",
+        "modelPermission": "read",
+        "tablePermissions": [
+          {
+            "name": "Sales Customers",
+            "filterExpression": "'Sales Customers'[custid]=1"
+          },
+          {
+            "name": "DimDate_Required",
+            "metadataPermission": "none"
+          }
+        ]
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "700"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}
